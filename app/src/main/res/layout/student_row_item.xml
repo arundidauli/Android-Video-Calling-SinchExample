@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="@dimen/padding_8dp"
+    app:cardElevation="2sp"
+    app:cardUseCompatPadding="true">
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:padding="@dimen/padding_8dp">
+      <ImageView
+          android:id="@+id/user_photo"
+          android:layout_width="80dp"
+          android:layout_height="80dp"
+          android:src="@drawable/btn_startcall"
+          android:scaleType="centerCrop"/>
+      <TextView
+          android:id="@+id/txt_user_name"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="User"
+          android:textStyle="bold"
+          android:textColor="@color/colorPrimary"
+          android:padding="@dimen/padding_8dp"
+          android:layout_toEndOf="@+id/user_photo"
+          android:layout_toRightOf="@+id/user_photo" />
+      <TextView
+          android:id="@+id/txt_email"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Email"
+          android:textSize="12sp"
+          android:layout_below="@+id/txt_user_name"
+          android:paddingLeft="@dimen/padding_8dp"
+          android:paddingRight="@dimen/padding_8dp"
+          android:layout_toEndOf="@+id/user_photo"
+          android:layout_toRightOf="@+id/user_photo" />
+      <ImageView
+          android:id="@+id/call_btn"
+          android:layout_width="50dp"
+          android:layout_height="50dp"
+          android:layout_alignParentEnd="true"
+          android:src="@drawable/ic_video_call"
+          android:tint="@color/colorAccent"
+          android:layout_marginTop="@dimen/padding_8dp"
+          android:scaleType="centerCrop"
+          android:layout_alignParentRight="true" />
+  </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

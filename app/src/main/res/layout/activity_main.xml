@@ -2,53 +2,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="0dip"
+    android:background="@color/colorPrimary"
     tools:context=".MainActivity">
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:orientation="vertical"
-        android:paddingLeft="40dp"
-        android:paddingRight="40dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:text="Enter your name"
-            android:textAllCaps="true"
-            android:id="@+id/textView"
-            android:layout_gravity="center_horizontal"
-            android:textSize="20sp"/>
-        <EditText
-            android:id="@+id/loginName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:inputType="textPersonName"
-            android:textSize="32sp"
-            android:padding="10dp"
-
-            >
-
-            <requestFocus/>
-        </EditText>
-
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/loginButton"
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
-        android:layout_gravity="center_horizontal"
-        android:text="Login"
-        android:minHeight="56dp"
-        android:minWidth="132dp"
-        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:src="@drawable/icon_agora_largest"/>
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/sign_in_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:layout_centerInParent="true"
+        android:layout_margin="16dp" />
+
+
+    <TextView
+        android:id="@+id/txt_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_margin="16dp"
+        android:padding="@dimen/padding_8dp"
+        android:textColor="@color/white"
+        android:text="Please wait to connect..."/>
 
 </RelativeLayout>
