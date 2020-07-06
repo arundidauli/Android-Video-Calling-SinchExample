@@ -129,6 +129,9 @@ public class SinchService extends Service {
 
     public interface StartFailedListener {
 
+        //this method is invoked when the connection is established with the SinchService
+        void onServiceConnected(IBinder iBinder);
+
         void onStartFailed(SinchError error);
 
         void onStarted();

@@ -18,7 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".GetAllLoginUserActivity"></activity>
+        <activity android:name=".GetAllLoginUserActivity"/>
         <activity
             android:name=".VideoCallActivity"
             android:screenOrientation="sensorPortrait"

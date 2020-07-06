@@ -47,7 +47,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         Glide.with(context).load(studentList.get(position).getPhoto_url())
                 .placeholder(R.drawable.icon_agora_large)
                 .into(holder.user_image);
-        holder.user_name.setText(String.format("Class: %s", studentList.get(position).getName()));
+        holder.user_name.setText(studentList.get(position).getName());
         holder.user_email.setText(studentList.get(position).getUser_id());
 
         holder.call_btn.setOnClickListener(v -> {

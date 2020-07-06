@@ -4,7 +4,6 @@ package com.techtutz.sinchexample;
  * Created by Spiker_x on 27-Apr-17.
  */
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -29,7 +28,7 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         if (SinchService.class.getName().equals(componentName.getClassName())) {
             mSinchServiceInterface = (SinchService.SinchServiceInterface) iBinder;
-            onServiceConnected();
+            onServiceConnected(iBinder);
         }
     }
 
@@ -41,9 +40,11 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
         }
     }
 
-    protected void onServiceConnected() {
+    protected void onServiceConnected(IBinder iBinder) {
         // for subclasses
+        mSinchServiceInterface = (SinchService.SinchServiceInterface) iBinder;
     }
+
 
     protected void onServiceDisconnected() {
         // for subclasses
@@ -53,4 +54,6 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
         return mSinchServiceInterface;
     }
 
+
+    public abstract void onServiceConnected();
 }

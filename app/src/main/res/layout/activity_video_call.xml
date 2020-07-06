@@ -60,7 +60,7 @@
             android:layout_width="@dimen/call_button_size"
             android:layout_height="@dimen/call_button_size"
             android:layout_centerInParent="true"
-            android:onClick="onCallClicked"
+
             android:src="@drawable/btn_endcall"
             android:scaleType="centerCrop"/>
 
@@ -72,7 +72,6 @@
             android:layout_toEndOf="@id/btn_call"
             android:layout_marginLeft="@dimen/control_bottom_horizontal_margin"
             android:layout_centerVertical="true"
-            android:onClick="onSwitchCameraClicked"
             android:src="@drawable/btn_switch_camera"
             android:scaleType="centerCrop"/>
 
@@ -84,7 +83,6 @@
             android:layout_toStartOf="@id/btn_call"
             android:layout_marginRight="@dimen/control_bottom_horizontal_margin"
             android:layout_centerVertical="true"
-            android:onClick="onLocalAudioMuteClicked"
             android:src="@drawable/btn_unmute"
             android:scaleType="centerCrop"/>
     </RelativeLayout>

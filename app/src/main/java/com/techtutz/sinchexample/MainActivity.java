@@ -14,12 +14,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.sinch.android.rtc.SinchError;
+import com.techtutz.sinchexample.model.User;
 import com.techtutz.sinchexample.util.Constant;
 import com.techtutz.sinchexample.util.Prefs;
 
@@ -34,6 +37,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -60,6 +64,8 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
     private static final int RC_SIGN_IN = 1001;
     private GoogleSignInClient googleSignInClient;
     private FirebaseAuth firebaseAuth;
+    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference mDatabaseReference;
     private TextView txt_status;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +77,9 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
         mSpinner=new ProgressDialog(this);
         FirebaseApp.initializeApp(this);
         txt_status=findViewById(R.id.txt_status);
-
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        mDatabaseReference = firebaseDatabase.getReference();
         SignInButton signInButton = findViewById(R.id.sign_in_button);
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
@@ -84,12 +92,17 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
         configureGoogleClient();
     }
 
+
     //this method is invoked when the connection is established with the SinchService
     @Override
-    protected void onServiceConnected() {
-        txt_status.setText("You are connected");
+    public void onServiceConnected(IBinder iBinder) {
+        super.onServiceConnected(iBinder);
         getSinchServiceInterface().setStartListener(this);
+    }
 
+    @Override
+    public void onServiceConnected() {
+        getSinchServiceInterface().setStartListener(this);
     }
 
     @Override
@@ -107,13 +120,11 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
             mSpinner.dismiss();
         }
     }
-
     //Invoked when just after the service is connected with Sinch
     @Override
     public void onStarted() {
         openPlaceCallActivity();
     }
-
     //Login is Clicked to manually to connect to the Sinch Service
     private void loginClicked() {
        // String userName = mLoginName.getText().toString();
@@ -139,8 +150,6 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
     }
 
     private void showSpinner() {
-        mSpinner = new ProgressDialog(this);
-        mSpinner.setTitle("Logging in");
         mSpinner.setMessage("Please wait...");
         mSpinner.show();
     }
@@ -166,7 +175,18 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
         }
     }
 
+    private void saveUser() {
+        String id = mDatabaseReference.child("user_list").push().getKey();
+        User user = new User();
+        user.setId(id);
+        user.setUser_id(Prefs.getInstance(context).GetValue(Constant.User_Id));
+        user.setName(Prefs.getInstance(context).GetValue(Constant.Name));
+        user.setPhoto_url(Prefs.getInstance(context).GetValue(Constant.Photo_url));
+        mDatabaseReference.child("user_list").child(id).setValue(user);
 
+        //Toast.makeText(getApplicationContext(), "User Add successfully", Toast.LENGTH_LONG).show();
+
+    }
     private void App_Permission() {
         Dexter.withActivity(this)
                 .withPermissions(
@@ -292,13 +312,13 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
                             Prefs.getInstance(context).SetValue(Constant.Name,user.getDisplayName());
                             Prefs.getInstance(context).SetValue(Constant.Photo_url,user.getPhotoUrl().toString());
                             Prefs.getInstance(context).SetValue(Constant.User_Id,user.getEmail());
+                            saveUser();
                             if (!getSinchServiceInterface().isStarted()) {
                                 getSinchServiceInterface().startClient(user.getEmail());
                                 showSpinner();
                             } else {
                                 openPlaceCallActivity();
                             }
-                            launchMainActivity(user);
                         } else {
                             // If sign in fails, display a message to the user.
 
@@ -317,7 +337,6 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
     private void launchMainActivity(FirebaseUser user) {
         if (user != null) {
             startActivity(new Intent(this, GetAllLoginUserActivity.class));
-            finish();
         }
     }
 

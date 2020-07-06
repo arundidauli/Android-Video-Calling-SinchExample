@@ -61,7 +61,7 @@ public class PlaceCallActivity extends BaseActivity {
 
     // invoked when the connection with SinchServer is established
     @Override
-    protected void onServiceConnected() {
+    public void onServiceConnected() {
         TextView userName = (TextView) findViewById(R.id.loggedInName);
         userName.setText(getSinchServiceInterface().getUserName());
         mCallButton.setEnabled(true);

@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,6 +22,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
 import com.techtutz.sinchexample.adapter.UserAdapter;
 import com.techtutz.sinchexample.listnener.MyItemClickListener;
@@ -29,8 +32,9 @@ import com.techtutz.sinchexample.util.Prefs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class GetAllLoginUserActivity extends BaseActivity implements MyItemClickListener {
+public class GetAllLoginUserActivity extends BaseActivity implements MyItemClickListener, SinchService.StartFailedListener {
     private static String TAG = GetAllLoginUserActivity.class.getSimpleName();
     private Context context;
     private List<User> userList;
@@ -51,29 +55,21 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
         mDatabaseReference = firebaseDatabase.getReference("user_list");
         mDatabaseReferences = firebaseDatabase.getReference();
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (getSinchServiceInterface() != null) {
+                    getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
+                }
+            }
+        },4000);
 
-        GetAllUser();
-        saveUser();
     }
 
-    private void saveUser() {
-        String id = mDatabaseReferences.child("user_list").push().getKey();
-        User user = new User();
-        user.setId(id);
-        user.setUser_id(Prefs.getInstance(context).GetValue(Constant.User_Id));
-        user.setName(Prefs.getInstance(context).GetValue(Constant.Name));
-        user.setPhoto_url(Prefs.getInstance(context).GetValue(Constant.Photo_url));
-        mDatabaseReferences.child("user_list").child(id).setValue(user);
-        Toast.makeText(getApplicationContext(), "User Add successfully", Toast.LENGTH_LONG).show();
-        Intent intent = new Intent(getApplicationContext(), PlaceCallActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-    }
 
     private void setRecyclerViewCategory() {
         RecyclerView recyclerView = findViewById(R.id.rv_student);
-        UserAdapter studentAdapter = new UserAdapter(context, userList);
+        UserAdapter studentAdapter = new UserAdapter(context, userList,this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -89,9 +85,11 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
                 progressDialog.dismiss();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     if (ds.exists()) {
+                        if (!Objects.equals(ds.child("user_id").getValue(String.class), Prefs.getInstance(context).GetValue(Constant.User_Id))){
+                            User student = ds.getValue(User.class);
+                            userList.add(student);
 
-                        User student = ds.getValue(User.class);
-                        userList.add(student);
+                        }
 
                     }
                 }
@@ -110,6 +108,30 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
 
 
     }
+
+    @Override
+    protected void onResume() {
+        if (getSinchServiceInterface() != null) {
+            progressDialog.show();
+            progressDialog.setMessage(Constant.Please_Wait);
+            getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
+
+        }
+        super.onResume();
+    }
+
+    //this method is invoked when the connection is established with the SinchService
+    @Override
+    public void onServiceConnected(IBinder iBinder) {
+        super.onServiceConnected(iBinder);
+        getSinchServiceInterface().setStartListener(this);
+    }
+
+    @Override
+    public void onServiceConnected() {
+
+    }
+
     @Override
     public void onDestroy() {
         if (getSinchServiceInterface() != null) {
@@ -119,16 +141,88 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
     }
     @Override
     public void onBackPressed() {
+       /* if (getSinchServiceInterface() != null) {
+            getSinchServiceInterface().stopClient();
+        }*/
         super.onBackPressed();
 
     }
 
     @Override
+    protected void onStart() {
+        if (getSinchServiceInterface() != null) {
+            progressDialog.show();
+            progressDialog.setMessage(Constant.Please_Wait);
+            getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
+
+        }
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        if (getSinchServiceInterface() != null) {
+            getSinchServiceInterface().stopClient();
+        }
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+        progressDialog.dismiss();
+
+        if (getSinchServiceInterface() != null) {
+            progressDialog.show();
+            progressDialog.setMessage(Constant.Please_Wait);
+            getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
+
+        }
+        super.onRestart();
+    }
+
+    @Override
     public void fireEvent(String User_id) {
+        if (User_id==null){
+            Toast.makeText(getApplicationContext(),"Another user not available",Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Log.e(TAG,"======================"+User_id);
         Call call = getSinchServiceInterface().callUserVideo(User_id);
         String callId = call.getCallId();
-        Intent callScreen = new Intent(this, CallScreenActivity.class);
-        callScreen.putExtra(SinchService.CALL_ID, callId);
-        startActivity(callScreen);
+        if (callId==null){
+            Toast.makeText(getApplicationContext(),"Another user not available",Toast.LENGTH_LONG).show();
+            return;
+        }
+        Log.e(TAG,"======================"+callId);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent callScreen = new Intent(GetAllLoginUserActivity.this, CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, callId);
+                startActivity(callScreen);
+            }
+        },1500);
+
+    }
+
+    @Override
+    public void onStartFailed(SinchError error) {
+        progressDialog.dismiss();
+        Toast.makeText(getApplicationContext(), "failed "+error.getMessage(), Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void onStarted() {
+        progressDialog.dismiss();
+        Toast.makeText(getApplicationContext(), "Service Started ", Toast.LENGTH_LONG).show();
+
+        if (!getSinchServiceInterface().isStarted()) {
+            getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
+        } else {
+            GetAllUser();
+        }
+
     }
 }

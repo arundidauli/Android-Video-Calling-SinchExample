@@ -4,18 +4,18 @@ package com.techtutz.sinchexample;
  * Created by Spiker_x on 27-Apr-17.
  */
 
-import com.sinch.android.rtc.PushPair;
-import com.sinch.android.rtc.calling.Call;
-import com.sinch.android.rtc.calling.CallEndCause;
-import com.sinch.android.rtc.video.VideoCallListener;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.sinch.android.rtc.calling.Call;
+import com.sinch.android.rtc.calling.CallEndCause;
+import com.sinch.android.rtc.video.VideoCallListener;
 
 import java.util.List;
 
@@ -24,15 +24,28 @@ public class IncomingCallScreenActivity extends BaseActivity {
     static final String TAG = IncomingCallScreenActivity.class.getSimpleName();
     private String mCallId;
     private AudioPlayer mAudioPlayer;
+    private OnClickListener mClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.answerButton:
+                    answerClicked();
+                    break;
+                case R.id.declineButton:
+                    declineClicked();
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.incoming);
 
-        Button answer = (Button) findViewById(R.id.answerButton);
+        ImageView answer =  findViewById(R.id.answerButton);
         answer.setOnClickListener(mClickListener);
-        Button decline = (Button) findViewById(R.id.declineButton);
+        ImageView decline =  findViewById(R.id.declineButton);
         decline.setOnClickListener(mClickListener);
 
         mAudioPlayer = new AudioPlayer(this);
@@ -41,7 +54,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
     }
 
     @Override
-    protected void onServiceConnected() {
+    public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
             call.addCallListener(new SinchCallListener());
@@ -116,18 +129,4 @@ public class IncomingCallScreenActivity extends BaseActivity {
 
         }
     }
-
-    private OnClickListener mClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.answerButton:
-                    answerClicked();
-                    break;
-                case R.id.declineButton:
-                    declineClicked();
-                    break;
-            }
-        }
-    };
 }
