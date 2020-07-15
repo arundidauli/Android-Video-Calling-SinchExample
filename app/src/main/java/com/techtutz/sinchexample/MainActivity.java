@@ -1,5 +1,25 @@
 package com.techtutz.sinchexample;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -26,63 +46,40 @@ import com.techtutz.sinchexample.model.User;
 import com.techtutz.sinchexample.util.Constant;
 import com.techtutz.sinchexample.util.Prefs;
 
-import android.Manifest;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-
-import android.os.IBinder;
-import android.provider.Settings;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends BaseActivity implements SinchService.StartFailedListener {
+    private static final String TAG = "SplashScreen";
+    private static final int RC_SIGN_IN = 1001;
     private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
     private Button mLoginButton;
     private EditText mLoginName;
     private ProgressDialog mSpinner;
     private Context context;
-    private static final String TAG = "SplashScreen";
-    private static final int RC_SIGN_IN = 1001;
     private GoogleSignInClient googleSignInClient;
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference mDatabaseReference;
     private TextView txt_status;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context=MainActivity.this;
+        context = MainActivity.this;
         App_Permission();
         //initializing UI elements
-        mSpinner=new ProgressDialog(this);
+        mSpinner = new ProgressDialog(this);
         FirebaseApp.initializeApp(this);
-        txt_status=findViewById(R.id.txt_status);
+        txt_status = findViewById(R.id.txt_status);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
         mDatabaseReference = firebaseDatabase.getReference();
         SignInButton signInButton = findViewById(R.id.sign_in_button);
         signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) {
+            @Override
+            public void onClick(View view) {
                 // Launch Sign In
                 signInToGoogle();
             }
@@ -95,15 +92,25 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
 
     //this method is invoked when the connection is established with the SinchService
     @Override
-    public void onServiceConnected(IBinder iBinder) {
-        super.onServiceConnected(iBinder);
+    public void onServiceConnected() {
+        txt_status.setText("You are connected...");
         getSinchServiceInterface().setStartListener(this);
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        // launchMainActivity(currentUser);
+
+
+        if (currentUser != null) {
+            Log.d(TAG, "Currently Signed in: " + firebaseAuth.getUid());
+            if (!getSinchServiceInterface().isStarted()) {
+                getSinchServiceInterface().startClient(firebaseAuth.getUid());
+                showSpinner();
+            } else {
+                openPlaceCallActivity();
+            }
+        }
     }
 
-    @Override
-    public void onServiceConnected() {
-        getSinchServiceInterface().setStartListener(this);
-    }
 
     @Override
     protected void onPause() {
@@ -120,32 +127,16 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
             mSpinner.dismiss();
         }
     }
+
     //Invoked when just after the service is connected with Sinch
     @Override
     public void onStarted() {
         openPlaceCallActivity();
     }
-    //Login is Clicked to manually to connect to the Sinch Service
-    private void loginClicked() {
-       // String userName = mLoginName.getText().toString();
-
-       /* if (userName.isEmpty()) {
-            Toast.makeText(this, "Please enter a name", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (!getSinchServiceInterface().isStarted()) {
-            getSinchServiceInterface().startClient(userName);
-            showSpinner();
-        } else {
-            openPlaceCallActivity();
-        }*/
-    }
-
 
     //Once the connection is made to the Sinch Service, It takes you to the next activity where you enter the name of the user to whom the call is to be placed
     private void openPlaceCallActivity() {
-        Intent mainActivity = new Intent(this, GetAllLoginUserActivity.class);
+        Intent mainActivity = new Intent(this, PlaceCallActivity.class);
         startActivity(mainActivity);
     }
 
@@ -155,10 +146,8 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
     }
 
 
-
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_RECORD_AUDIO: {
                 if (grantResults.length > 0
@@ -176,17 +165,17 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
     }
 
     private void saveUser() {
-        String id = mDatabaseReference.child("user_list").push().getKey();
         User user = new User();
-        user.setId(id);
+        user.setId(firebaseAuth.getUid());
         user.setUser_id(Prefs.getInstance(context).GetValue(Constant.User_Id));
         user.setName(Prefs.getInstance(context).GetValue(Constant.Name));
         user.setPhoto_url(Prefs.getInstance(context).GetValue(Constant.Photo_url));
-        mDatabaseReference.child("user_list").child(id).setValue(user);
-
-        //Toast.makeText(getApplicationContext(), "User Add successfully", Toast.LENGTH_LONG).show();
+        user.setActive(false);
+        mDatabaseReference.child("user_list").child(Objects.requireNonNull(firebaseAuth.getUid())).setValue(user);
+        Toast.makeText(getApplicationContext(), "User Add successfully", Toast.LENGTH_LONG).show();
 
     }
+
     private void App_Permission() {
         Dexter.withActivity(this)
                 .withPermissions(
@@ -200,7 +189,7 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         // check if all permissions are granted
                         if (report.areAllPermissionsGranted()) {
-                           // Prefs.getInstance(context).SetValue("Approval","yes");
+                            // Prefs.getInstance(context).SetValue("Approval","yes");
 
                         }
 
@@ -254,19 +243,6 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
         firebaseAuth = FirebaseAuth.getInstance();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        launchMainActivity(currentUser);
-
-        if (currentUser != null) {
-            Log.d(TAG, "Currently Signed in: " + currentUser.getEmail());
-            // showToastMessage("Currently Logged in: " + currentUser.getEmail());
-        }
-    }
 
     public void signInToGoogle() {
         Intent signInIntent = googleSignInClient.getSignInIntent();
@@ -284,9 +260,6 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 showToastMessage("Google Sign in Succeeded");
                 firebaseAuthWithGoogle(account);
-
-
-
 
 
             } catch (ApiException e) {
@@ -309,12 +282,12 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             Log.d(TAG, "signInWithCredential:success: currentUser: " + user.getEmail());
-                            Prefs.getInstance(context).SetValue(Constant.Name,user.getDisplayName());
-                            Prefs.getInstance(context).SetValue(Constant.Photo_url,user.getPhotoUrl().toString());
-                            Prefs.getInstance(context).SetValue(Constant.User_Id,user.getEmail());
+                            Prefs.getInstance(context).SetValue(Constant.Name, user.getDisplayName());
+                            Prefs.getInstance(context).SetValue(Constant.Photo_url, user.getPhotoUrl().toString());
+                            Prefs.getInstance(context).SetValue(Constant.User_Id, user.getEmail());
                             saveUser();
                             if (!getSinchServiceInterface().isStarted()) {
-                                getSinchServiceInterface().startClient(user.getEmail());
+                                getSinchServiceInterface().startClient(firebaseAuth.getUid());
                                 showSpinner();
                             } else {
                                 openPlaceCallActivity();
@@ -336,8 +309,13 @@ public class MainActivity extends BaseActivity implements SinchService.StartFail
 
     private void launchMainActivity(FirebaseUser user) {
         if (user != null) {
-            startActivity(new Intent(this, GetAllLoginUserActivity.class));
+            startActivity(new Intent(this, PlaceCallActivity.class));
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // User should exit activity by ending call, not by going back.
     }
 
 }

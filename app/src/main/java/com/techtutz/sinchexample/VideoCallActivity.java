@@ -1,13 +1,13 @@
 package com.techtutz.sinchexample;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class VideoCallActivity extends AppCompatActivity {
     private boolean mCallEnd;
@@ -26,7 +26,14 @@ public class VideoCallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_call);
+
+
+        initUI();
+
+
     }
+
+
     private void initUI() {
         mLocalContainer = findViewById(R.id.local_video_view_container);
         mRemoteContainer = findViewById(R.id.remote_video_view_container);
@@ -34,9 +41,6 @@ public class VideoCallActivity extends AppCompatActivity {
         mCallBtn = findViewById(R.id.btn_call);
         mMuteBtn = findViewById(R.id.btn_mute);
         mSwitchCameraBtn = findViewById(R.id.btn_switch_camera);
-
-
-
     }
 
     private void leaveChannel() {

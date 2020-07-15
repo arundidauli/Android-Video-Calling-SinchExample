@@ -6,39 +6,55 @@
     android:background="@color/colorPrimary">
 
 
-    <RelativeLayout
+    <!--
+     <RelativeLayout
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:padding="0dip"
+         android:background="@android:color/darker_gray"
+         android:orientation="vertical">
+
+
+        &lt;!&ndash; <RelativeLayout
+             android:id="@+id/localVideo"
+             android:layout_width="120dp"
+             android:layout_alignParentRight="true"
+             android:layout_height="170dp"
+             android:layout_marginRight="16dp"
+             android:layout_marginLeft="16dp"
+             android:background="@drawable/round_corner"
+             android:layout_marginTop="100dp"
+             android:layout_alignParentTop="true"
+             android:layout_alignParentEnd="true" />&ndash;&gt;
+
+     </RelativeLayout>-->
+
+
+    <FrameLayout
+        android:id="@+id/remoteVideo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="0dip"
-        android:background="@android:color/darker_gray"
-        android:orientation="vertical">
+        android:fitsSystemWindows="true" />
 
-        <LinearLayout android:id="@+id/remoteVideo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:orientation="horizontal"
-            android:layout_alignParentStart="true" />
 
-        <RelativeLayout
-            android:id="@+id/localVideo"
-            android:layout_width="120dp"
-            android:layout_alignParentRight="true"
-            android:layout_height="170dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginLeft="16dp"
-            android:background="@drawable/round_corner"
-            android:layout_marginTop="190dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true" />
+    <FrameLayout
+        android:id="@+id/localVideo"
+        android:layout_width="@dimen/local_preview_width"
+        android:layout_height="@dimen/local_preview_height"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="@dimen/local_preview_margin_right"
+        android:layout_marginRight="@dimen/local_preview_margin_right"
+        android:background="@drawable/round_corner"
+        android:fitsSystemWindows="true"></FrameLayout>
 
-    </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="#AA222222">
+        android:background="#AA222222"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/remoteUser"
@@ -46,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/padding_8dp"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/callState"
@@ -54,73 +70,59 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="Ringing"
-            android:textSize="16sp"
+            android:textAllCaps="true"
             android:textColor="@color/white"
-            android:textAllCaps="true"/>
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/callDuration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp"
             android:layout_marginTop="4dp"
-            android:textColor="@color/white"
-            android:text="00:00" />
+            android:layout_marginBottom="8dp"
+            android:text="00:00"
+            android:textColor="@color/white" />
 
     </LinearLayout>
+
     <RelativeLayout
         android:id="@+id/control_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="@dimen/control_bottom_margin">
+
         <ImageView
             android:id="@+id/hangupButton"
             android:layout_width="@dimen/call_button_size"
             android:layout_height="@dimen/call_button_size"
             android:layout_centerInParent="true"
-            android:src="@drawable/btn_endcall"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop"
+            android:src="@drawable/btn_endcall" />
+
         <ImageView
             android:id="@+id/btn_switch_camera"
             android:layout_width="@dimen/other_button_size"
             android:layout_height="@dimen/other_button_size"
-            android:layout_toRightOf="@id/hangupButton"
-            android:layout_toEndOf="@id/hangupButton"
-            android:layout_marginLeft="@dimen/control_bottom_horizontal_margin"
             android:layout_centerVertical="true"
-            android:src="@drawable/btn_switch_camera"
-            android:scaleType="centerCrop"/>
+            android:layout_marginStart="@dimen/control_bottom_horizontal_margin"
+            android:layout_marginLeft="@dimen/control_bottom_horizontal_margin"
+            android:layout_toEndOf="@id/hangupButton"
+            android:layout_toRightOf="@id/hangupButton"
+            android:scaleType="centerCrop"
+            android:src="@drawable/btn_switch_camera" />
 
         <ImageView
             android:id="@+id/btn_mute"
             android:layout_width="@dimen/other_button_size"
             android:layout_height="@dimen/other_button_size"
-            android:layout_toLeftOf="@id/hangupButton"
-            android:layout_toStartOf="@id/hangupButton"
-            android:layout_marginRight="@dimen/control_bottom_horizontal_margin"
             android:layout_centerVertical="true"
-            android:src="@drawable/btn_unmute"
-            android:scaleType="centerCrop"/>
+            android:layout_marginEnd="@dimen/control_bottom_horizontal_margin"
+            android:layout_marginRight="@dimen/control_bottom_horizontal_margin"
+            android:layout_toStartOf="@id/hangupButton"
+            android:layout_toLeftOf="@id/hangupButton"
+            android:scaleType="centerCrop"
+            android:src="@drawable/btn_unmute" />
     </RelativeLayout>
-
-   <!-- <RelativeLayout
-        android:id="@+id/bottomPanel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:layout_weight="1">
-        <Button
-            android:paddingBottom="20dp"
-            android:paddingTop="20dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="END call"
-            android:textSize="20sp"
-            />
-
-    </RelativeLayout>-->
-
 </RelativeLayout>

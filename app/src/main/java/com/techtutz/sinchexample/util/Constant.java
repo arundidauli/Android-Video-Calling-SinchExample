@@ -24,6 +24,7 @@ public class Constant {
     public static String Name = "name";
     public static String Photo_url = "photo";
     public static String User_Id = "user_id";
+    public static String Id = "uid";
 
     public static String Please_Wait = "Please wait...";
     public static final int SPLASH_DELAY = 3000;

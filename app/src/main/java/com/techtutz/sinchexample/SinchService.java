@@ -20,6 +20,7 @@ import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallClient;
 import com.sinch.android.rtc.calling.CallClientListener;
 import com.sinch.android.rtc.video.VideoController;
+import com.techtutz.sinchexample.util.Prefs;
 
 public class SinchService extends Service {
 
@@ -48,7 +49,6 @@ public class SinchService extends Service {
         }
         super.onDestroy();
     }
-
     private void start(String userName) {
         if (mSinchClient == null) {
             mUserId = userName;
@@ -65,7 +65,6 @@ public class SinchService extends Service {
             mSinchClient.start();
         }
     }
-
     private void stop() {
         if (mSinchClient != null) {
             mSinchClient.terminate();
@@ -107,11 +106,9 @@ public class SinchService extends Service {
         public void setStartListener(StartFailedListener listener) {
             mListener = listener;
         }
-
         public Call getCall(String callId) {
             return mSinchClient.getCallClient().getCall(callId);
         }
-
         public VideoController getVideoController() {
             if (!isStarted()) {
                 return null;
@@ -130,11 +127,11 @@ public class SinchService extends Service {
     public interface StartFailedListener {
 
         //this method is invoked when the connection is established with the SinchService
-        void onServiceConnected(IBinder iBinder);
 
         void onStartFailed(SinchError error);
 
         void onStarted();
+
     }
 
     private class MySinchClientListener implements SinchClientListener {
@@ -183,18 +180,17 @@ public class SinchService extends Service {
         }
 
         @Override
-        public void onRegistrationCredentialsRequired(SinchClient client,
-                                                      ClientRegistration clientRegistration) {
+        public void onRegistrationCredentialsRequired(SinchClient client, ClientRegistration clientRegistration) {
         }
     }
 
     private class SinchCallClientListener implements CallClientListener {
-
         @Override
         public void onIncomingCall(CallClient callClient, Call call) {
             Log.d(TAG, "Incoming call");
             Intent intent = new Intent(SinchService.this, IncomingCallScreenActivity.class);
             intent.putExtra(CALL_ID, call.getCallId());
+            Prefs.getInstance(getApplicationContext()).SetValue(SinchService.CALL_ID, call.getCallId());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             SinchService.this.startActivity(intent);
         }

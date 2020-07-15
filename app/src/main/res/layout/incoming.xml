@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
     android:orientation="vertical">
 
     <LinearLayout
@@ -19,8 +18,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_margin="14dp"
             android:text="Test user"
-            android:textColor="@color/white"
-            android:textStyle="bold" />
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/callState"
@@ -29,47 +27,45 @@
             android:layout_gravity="center_horizontal"
             android:text="Incoming call"
             android:textAllCaps="true"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textColor="@color/white" />
 
     </LinearLayout>
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/app_name"
         android:layout_centerInParent="true"
-        android:src="@drawable/icon_agora_large"
-        android:padding="0dip" />
+        android:contentDescription="@string/app_name"
+        android:padding="0dip"
+        android:src="@drawable/icon_agora_large" />
 
     <LinearLayout
         android:id="@+id/bottomPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal"
         android:layout_alignParentBottom="true"
-        android:padding="16dp"
-        android:background="@color/colorPrimary">
+        android:background="@color/colorPrimary"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/answerButton"
             android:layout_width="90dp"
             android:layout_height="90dp"
             android:layout_marginEnd="@dimen/padding_8dp"
-            android:src="@drawable/btn_startcall"
+            android:layout_marginRight="@dimen/padding_8dp"
             android:padding="@dimen/padding_8dp"
-            android:layout_marginRight="@dimen/padding_8dp" />
+            android:src="@drawable/btn_startcall" />
 
         <ImageView
             android:id="@+id/declineButton"
             android:layout_width="90dp"
             android:layout_height="90dp"
             android:layout_marginStart="@dimen/padding_8dp"
+            android:layout_marginLeft="@dimen/padding_8dp"
             android:padding="@dimen/padding_8dp"
-            android:src="@drawable/btn_endcall_normal"
-            android:layout_marginLeft="@dimen/padding_8dp" />
-
+            android:src="@drawable/btn_endcall_normal" />
     </LinearLayout>
 
 </RelativeLayout>

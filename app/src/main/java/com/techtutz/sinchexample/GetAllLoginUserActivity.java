@@ -1,20 +1,18 @@
 package com.techtutz.sinchexample;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -62,8 +60,7 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
                     getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
                 }
             }
-        },4000);
-
+        }, 3000);
     }
 
 
@@ -85,9 +82,12 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
                 progressDialog.dismiss();
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     if (ds.exists()) {
-                        if (!Objects.equals(ds.child("user_id").getValue(String.class), Prefs.getInstance(context).GetValue(Constant.User_Id))){
+                        if (!Objects.equals(ds.child("user_id").getValue(String.class), Prefs.getInstance(context).GetValue(Constant.User_Id))) {
                             User student = ds.getValue(User.class);
                             userList.add(student);
+                            if (userList.size() == 0) {
+                                Toast.makeText(getApplicationContext(), "No one online", Toast.LENGTH_LONG).show();
+                            }
 
                         }
 
@@ -112,25 +112,12 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
     @Override
     protected void onResume() {
         if (getSinchServiceInterface() != null) {
-            progressDialog.show();
-            progressDialog.setMessage(Constant.Please_Wait);
             getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
-
         }
         super.onResume();
     }
 
-    //this method is invoked when the connection is established with the SinchService
-    @Override
-    public void onServiceConnected(IBinder iBinder) {
-        super.onServiceConnected(iBinder);
-        getSinchServiceInterface().setStartListener(this);
-    }
 
-    @Override
-    public void onServiceConnected() {
-
-    }
 
     @Override
     public void onDestroy() {
@@ -139,25 +126,7 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
         }
         super.onDestroy();
     }
-    @Override
-    public void onBackPressed() {
-       /* if (getSinchServiceInterface() != null) {
-            getSinchServiceInterface().stopClient();
-        }*/
-        super.onBackPressed();
 
-    }
-
-    @Override
-    protected void onStart() {
-        if (getSinchServiceInterface() != null) {
-            progressDialog.show();
-            progressDialog.setMessage(Constant.Please_Wait);
-            getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
-
-        }
-        super.onStart();
-    }
 
     @Override
     protected void onStop() {
@@ -169,13 +138,9 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
 
     @Override
     protected void onRestart() {
-        progressDialog.dismiss();
-
         if (getSinchServiceInterface() != null) {
-            progressDialog.show();
-            progressDialog.setMessage(Constant.Please_Wait);
-            getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
 
+            getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
         }
         super.onRestart();
     }
@@ -194,30 +159,33 @@ public class GetAllLoginUserActivity extends BaseActivity implements MyItemClick
             Toast.makeText(getApplicationContext(),"Another user not available",Toast.LENGTH_LONG).show();
             return;
         }
-        Log.e(TAG,"======================"+callId);
+        Log.e(TAG, "======================" + callId);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 Intent callScreen = new Intent(GetAllLoginUserActivity.this, CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, callId);
+                Prefs.getInstance(context).SetValue(SinchService.CALL_ID, callId);
                 startActivity(callScreen);
             }
-        },1500);
+        }, 1000);
 
     }
 
     @Override
+    public void onServiceConnected() {
+        getSinchServiceInterface().setStartListener(this);
+    }
+
+    @Override
     public void onStartFailed(SinchError error) {
-        progressDialog.dismiss();
-        Toast.makeText(getApplicationContext(), "failed "+error.getMessage(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "failed " + error.getMessage(), Toast.LENGTH_LONG).show();
 
     }
 
     @Override
     public void onStarted() {
-        progressDialog.dismiss();
         Toast.makeText(getApplicationContext(), "Service Started ", Toast.LENGTH_LONG).show();
-
         if (!getSinchServiceInterface().isStarted()) {
             getSinchServiceInterface().startClient(Prefs.getInstance(context).GetValue(Constant.User_Id));
         } else {

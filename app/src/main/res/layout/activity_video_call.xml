@@ -9,17 +9,18 @@
     <RelativeLayout
         android:id="@+id/remote_video_view_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorPrimary">
+        android:layout_height="match_parent">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@id/icon_padding">
+
             <ImageView
                 android:layout_width="@dimen/remote_back_icon_size"
                 android:layout_height="@dimen/remote_back_icon_size"
                 android:layout_centerInParent="true"
-                android:src="@drawable/icon_agora_largest"/>
+                android:src="@drawable/icon_agora_largest" />
         </RelativeLayout>
         <RelativeLayout
             android:id="@+id/icon_padding"
@@ -38,7 +39,7 @@
         android:layout_marginEnd="@dimen/local_preview_margin_right"
         android:layout_marginRight="@dimen/local_preview_margin_right"
         android:layout_marginTop="@dimen/local_preview_margin_top"
-        android:background="@color/colorAccent">
+        android:background="@drawable/round_corner">
 
         <ImageView
             android:layout_width="@dimen/local_back_icon_size"
@@ -60,7 +61,6 @@
             android:layout_width="@dimen/call_button_size"
             android:layout_height="@dimen/call_button_size"
             android:layout_centerInParent="true"
-
             android:src="@drawable/btn_endcall"
             android:scaleType="centerCrop"/>
 
@@ -73,7 +73,8 @@
             android:layout_marginLeft="@dimen/control_bottom_horizontal_margin"
             android:layout_centerVertical="true"
             android:src="@drawable/btn_switch_camera"
-            android:scaleType="centerCrop"/>
+            android:layout_marginStart="@dimen/control_bottom_horizontal_margin"
+            android:scaleType="centerCrop" />
 
         <ImageView
             android:id="@+id/btn_mute"
@@ -84,7 +85,8 @@
             android:layout_marginRight="@dimen/control_bottom_horizontal_margin"
             android:layout_centerVertical="true"
             android:src="@drawable/btn_unmute"
-            android:scaleType="centerCrop"/>
+            android:layout_marginEnd="@dimen/control_bottom_horizontal_margin"
+            android:scaleType="centerCrop" />
     </RelativeLayout>
 
    </RelativeLayout>

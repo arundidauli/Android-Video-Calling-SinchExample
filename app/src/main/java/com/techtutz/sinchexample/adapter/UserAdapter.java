@@ -50,10 +50,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         holder.user_name.setText(studentList.get(position).getName());
         holder.user_email.setText(studentList.get(position).getUser_id());
 
+        if (studentList.get(position).isActive()) {
+            holder.call_btn_online.setVisibility(View.VISIBLE);
+            holder.call_btn_online.setBackgroundResource(R.drawable.ic_online_green);
+        } else {
+            holder.call_btn_online.setVisibility(View.GONE);
+            holder.call_btn_online.setBackgroundResource(R.drawable.ic_online_status);
+        }
         holder.call_btn.setOnClickListener(v -> {
-            myItemClickListener.fireEvent(studentList.get(position).getUser_id());
+            myItemClickListener.fireEvent(studentList.get(position).getId());
         });
-
 
 
     }
@@ -66,7 +72,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         private TextView user_name, user_email;
-        private ImageView user_image, call_btn;
+        private ImageView user_image, call_btn, call_btn_online;
 
 
         MyViewHolder(View view) {
@@ -75,6 +81,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
             user_email = view.findViewById(R.id.txt_email);
             user_image = view.findViewById(R.id.user_photo);
             call_btn = view.findViewById(R.id.call_btn);
+            call_btn_online = view.findViewById(R.id.call_btn_online);
 
         }
     }

@@ -1,16 +1,16 @@
 package com.techtutz.sinchexample;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +38,7 @@ public class CallScreenActivity extends BaseActivity {
     private AudioPlayer mAudioPlayer;
     private Timer mTimer;
     private UpdateCallDurationTask mDurationTask;
-
+    private boolean mMuted = false;
     private String mCallId;
     private long mCallStart = 0;
     private boolean mAddedListener = false;
@@ -47,6 +47,8 @@ public class CallScreenActivity extends BaseActivity {
     private TextView mCallDuration;
     private TextView mCallState;
     private TextView mCallerName;
+    private ImageView btn_mute;
+    private Context context;
 
     private class UpdateCallDurationTask extends TimerTask {
 
@@ -78,13 +80,23 @@ public class CallScreenActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.callscreen);
-
+        context = CallScreenActivity.this;
         mAudioPlayer = new AudioPlayer(this);
         mCallDuration = (TextView) findViewById(R.id.callDuration);
         mCallerName = (TextView) findViewById(R.id.remoteUser);
         mCallState = (TextView) findViewById(R.id.callState);
         ImageView endCallButton = (ImageView) findViewById(R.id.hangupButton);
+        btn_mute = findViewById(R.id.btn_mute);
 
+
+        mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+        Log.e(TAG, "----------------" + mCallId);
+     /*   mCallId= Prefs.getInstance(context).GetValue(SinchService.CALL_ID);
+        Log.e(TAG,"----------------"+mCallId);*/
+
+        if (savedInstanceState == null) {
+            mCallStart = System.currentTimeMillis();
+        }
         endCallButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,10 +104,14 @@ public class CallScreenActivity extends BaseActivity {
             }
         });
 
-        mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
-        if (savedInstanceState == null) {
-            mCallStart = System.currentTimeMillis();
-        }
+        btn_mute.setOnClickListener(view -> {
+            onLocalAudioMuteClicked();
+        });
+
+        findViewById(R.id.btn_switch_camera).setOnClickListener(view -> {
+            SwitchCamera();
+        });
+
     }
 
     @Override
@@ -116,13 +132,12 @@ public class CallScreenActivity extends BaseActivity {
 
     //method to update video feeds in the UI
     private void updateUI() {
-        if (getSinchServiceInterface() == null) {
+        if ((getSinchServiceInterface() == null) || (!getSinchServiceInterface().isStarted())) {
             return; // early
         }
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 50);
-        }    else {
+        } else {
 
 
             Call call = getSinchServiceInterface().getCall(mCallId);
@@ -138,7 +153,6 @@ public class CallScreenActivity extends BaseActivity {
 
 
     }
-
     //stop the timer when call is ended
     @Override
     public void onStop() {
@@ -147,7 +161,6 @@ public class CallScreenActivity extends BaseActivity {
         mTimer.cancel();
         removeVideoViews();
     }
-
     //start the timer for the call duration here
     @Override
     public void onStart() {
@@ -162,7 +175,6 @@ public class CallScreenActivity extends BaseActivity {
     public void onBackPressed() {
         // User should exit activity by ending call, not by going back.
     }
-
     //method to end the call
     private void endCall() {
         mAudioPlayer.stopProgressTone();
@@ -172,32 +184,27 @@ public class CallScreenActivity extends BaseActivity {
         }
         finish();
     }
-
     private String formatTimespan(long timespan) {
         long totalSeconds = timespan / 1000;
         long minutes = totalSeconds / 60;
         long seconds = totalSeconds % 60;
         return String.format(Locale.US, "%02d:%02d", minutes, seconds);
     }
-
     //method to update live duration of the call
     private void updateCallDuration() {
         if (mCallStart > 0) {
             mCallDuration.setText(formatTimespan(System.currentTimeMillis() - mCallStart));
         }
     }
-
     //method which sets up the video feeds from the server to the UI of the activity
     private void addVideoViews() {
         if (mVideoViewsAdded || getSinchServiceInterface() == null) {
             return; //early
         }
-
         final VideoController vc = getSinchServiceInterface().getVideoController();
         if (vc != null) {
-            RelativeLayout localView = (RelativeLayout) findViewById(R.id.localVideo);
+            FrameLayout localView = findViewById(R.id.localVideo);
             localView.addView(vc.getLocalView());
-
             localView.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -206,9 +213,20 @@ public class CallScreenActivity extends BaseActivity {
                 }
             });
 
-            LinearLayout view = (LinearLayout) findViewById(R.id.remoteVideo);
+            FrameLayout view = findViewById(R.id.remoteVideo);
             view.addView(vc.getRemoteView());
+            View remoteView = vc.getRemoteView();
+            if (remoteView instanceof SurfaceView) {
+                ((SurfaceView) remoteView).setZOrderOnTop(true);
+            }
             mVideoViewsAdded = true;
+        }
+    }
+
+    void SwitchCamera() {
+        final VideoController vc = getSinchServiceInterface().getVideoController();
+        if (vc != null) {
+            vc.toggleCaptureDevicePosition();
         }
     }
 
@@ -219,14 +237,35 @@ public class CallScreenActivity extends BaseActivity {
         }
 
         VideoController vc = getSinchServiceInterface().getVideoController();
-        if (vc != null) {
-            LinearLayout view = (LinearLayout) findViewById(R.id.remoteVideo);
-            view.removeView(vc.getRemoteView());
 
-            RelativeLayout localView = (RelativeLayout) findViewById(R.id.localVideo);
+        if (vc != null) {
+            FrameLayout view = findViewById(R.id.remoteVideo);
+            view.removeView(vc.getRemoteView());
+            View remoteView = vc.getRemoteView();
+            if (remoteView instanceof SurfaceView) {
+                ((SurfaceView) remoteView).setZOrderOnTop(true);
+            }
+            FrameLayout localView = findViewById(R.id.localVideo);
             localView.removeView(vc.getLocalView());
             mVideoViewsAdded = false;
         }
+    }
+
+    public void onLocalAudioMuteClicked() {
+        mMuted = !mMuted;
+        // Stops/Resumes sending the local audio stream.
+        // mRtcEngine.muteLocalAudioStream(mMuted);
+        AudioController audioController = getSinchServiceInterface().getAudioController();
+        if (mMuted) {
+            audioController.disableSpeaker();
+            mMuted = false;
+        } else {
+            audioController.enableSpeaker();
+            mMuted = true;
+
+        }
+        int res = mMuted ? R.drawable.btn_mute : R.drawable.btn_unmute;
+        btn_mute.setImageResource(res);
     }
 
     private class SinchCallListener implements VideoCallListener {

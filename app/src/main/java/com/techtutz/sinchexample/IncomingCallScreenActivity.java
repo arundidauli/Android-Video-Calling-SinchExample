@@ -4,26 +4,27 @@ package com.techtutz.sinchexample;
  * Created by Spiker_x on 27-Apr-17.
  */
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.video.VideoCallListener;
+import com.techtutz.sinchexample.util.Prefs;
 
 import java.util.List;
 
 public class IncomingCallScreenActivity extends BaseActivity {
-
     static final String TAG = IncomingCallScreenActivity.class.getSimpleName();
     private String mCallId;
     private AudioPlayer mAudioPlayer;
+    private Context context;
     private OnClickListener mClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -38,46 +39,56 @@ public class IncomingCallScreenActivity extends BaseActivity {
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.incoming);
-
-        ImageView answer =  findViewById(R.id.answerButton);
+        context = IncomingCallScreenActivity.this;
+        ImageView answer = findViewById(R.id.answerButton);
         answer.setOnClickListener(mClickListener);
-        ImageView decline =  findViewById(R.id.declineButton);
+        ImageView decline = findViewById(R.id.declineButton);
         decline.setOnClickListener(mClickListener);
 
         mAudioPlayer = new AudioPlayer(this);
         mAudioPlayer.playRingtone();
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+        Log.e(TAG, "----------------" + mCallId);
+        mCallId = Prefs.getInstance(context).GetValue(SinchService.CALL_ID);
+        Log.e(TAG, "----------------" + mCallId);
+
     }
 
     @Override
     public void onServiceConnected() {
+        Log.e(TAG, "Service connecting...");
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
             call.addCallListener(new SinchCallListener());
             TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
             remoteUser.setText(call.getRemoteUserId());
-
         } else {
             Log.e(TAG, "Started with invalid callId, aborting");
             finish();
         }
+
     }
 
     private void answerClicked() {
+
         mAudioPlayer.stopRingtone();
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
             call.answer();
             Intent intent = new Intent(this, CallScreenActivity.class);
             intent.putExtra(SinchService.CALL_ID, mCallId);
+            Prefs.getInstance(context).SetValue(SinchService.CALL_ID, mCallId);
             startActivity(intent);
         } else {
             finish();
         }
+
+
     }
 
     private void declineClicked() {

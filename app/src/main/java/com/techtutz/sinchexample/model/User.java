@@ -5,10 +5,19 @@ public class User {
     private String user_id;
     private String name;
     private String photo_url;
+    private boolean isActive;
 
     public User() {
+
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 
     public String getId() {
         return id;
